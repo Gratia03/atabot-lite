@@ -2,7 +2,6 @@ import httpx
 import numpy as np
 from typing import List, Optional
 import logging
-from sklearn.metrics.pairwise import cosine_similarity
 
 from app.core.config import settings
 
@@ -48,13 +47,19 @@ class EmbeddingService:
             return None
     
     def calculate_similarity(self, embedding1: np.ndarray, embedding2: np.ndarray) -> float:
-        """Calculate cosine similarity between two embeddings"""
+        """Calculate cosine similarity between two embeddings using numpy"""
         if embedding1 is None or embedding2 is None:
             return 0.0
         
-        similarity = cosine_similarity(
-            embedding1.reshape(1, -1),
-            embedding2.reshape(1, -1)
-        )[0][0]
+        # Implementasi cosine similarity dengan NumPy
+        dot_product = np.dot(embedding1, embedding2)
+        norm_1 = np.linalg.norm(embedding1)
+        norm_2 = np.linalg.norm(embedding2)
+        
+        # Hindari pembagian dengan nol
+        if norm_1 == 0 or norm_2 == 0:
+            return 0.0
+            
+        similarity = dot_product / (norm_1 * norm_2)
         
         return float(similarity)

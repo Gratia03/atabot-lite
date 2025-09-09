@@ -1,0 +1,16 @@
+# Vercel
+
+.vercel/
+
+# Python
+
+**pycache**/
+_.pyc
+.venv/
+venv/
+_.bak
+
+# IDE
+
+.vscode/
+.idea/
