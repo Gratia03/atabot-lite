@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse
+import os
 
 from app.core.config import settings
 from app.api.v1.api import api_router
@@ -61,6 +63,14 @@ async def read_root():
     </body>
     </html>
     """
+
+@app.get("/widget.html", response_class=FileResponse)
+async def get_widget():
+    """Menyajikan halaman widget"""
+    # Path ini sudah benar karena 'templates' berada di dalam 'app'
+    # sama seperti 'main.py'
+    widget_path = os.path.join(os.path.dirname(__file__), "templates", "widget.html")
+    return FileResponse(widget_path)
 
 # Include routers
 app.include_router(api_router, prefix="/api/v1")
