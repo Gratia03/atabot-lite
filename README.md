@@ -1,279 +1,133 @@
-# AURA (Atams Universal Runtime Architecture)
-
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql)](https://www.postgresql.org/)
-[![Redis](https://img.shields.io/badge/Redis-7+-DC382D?logo=redis)](https://redis.io/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose/)
-
-A **backend template** for Atams projects built with **FastAPI**, **PostgreSQL**, and **Clean Architecture** principles.  
-Lightweight, production-ready, and easy to extend.
-
----
-
-## 📑 Table of Contents
-- [Quick Start](#-quick-start)
-  - [Setup with Docker](#setup-with-docker)
-  - [Manual Setup (Development)](#manual-setup-development)
-- [API Documentation](#-api-documentation)
-- [Configuration](#-configuration)
-- [Project Structure](#-project-structure)
-- [Request Flow](#-request-flow-architecture-overview)
-- [Testing](#-testing)
-- [Deployment](#-deployment)
-- [Notes](#-notes)
-- [Contributing](#-contributing)
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python **3.11+**
-- PostgreSQL **15+**
-- Redis (optional)
-- Docker & Docker Compose (optional)
-
----
-
-### Setup with Docker
-
-1. Clone repository
-```bash
-git clone https://github.com/GratiaManullang03/aura.git
-cd aura
-````
-
-2. Copy environment variables
-
-```bash
-cp .env.example .env
-# Edit .env as needed
-```
-
-3. Run with Docker Compose
-
-```bash
-docker-compose up --build
-```
-
-👉 API will be available at **[http://localhost:8000](http://localhost:8000)**
-
----
-
-### Manual Setup (Development)
-
-1. Create a virtual environment
-
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
-
-2. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-3. Setup PostgreSQL
-
-```sql
-CREATE DATABASE atabot;
-CREATE SCHEMA IF NOT EXISTS atabot;
-
-CREATE TABLE atabot."user" (
-    u_id bigserial NOT NULL,
-    u_name varchar NULL,
-    u_created_at timestamp DEFAULT now() NOT NULL,
-    u_updated_at timestamp NULL,
-    CONSTRAINT user_pk PRIMARY KEY (u_id)
-);
-```
-
-4. Run the app
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-
----
-
-## 📚 API Documentation
-
-* Swagger UI → [http://localhost:8000/docs](http://localhost:8000/docs)
-* ReDoc → [http://localhost:8000/redoc](http://localhost:8000/redoc)
-
----
-
-## 🔧 Configuration
-
-### Authentication
-
-* JWT-based authentication (skeleton implementation).
-* Customize per client:
-
-  * Token logic → `app/core/security.py`
-  * Validation → `app/api/deps.py`
-* Extend with **SSO, OAuth2, or API Key**.
-
-### Database
-
-* SQLAlchemy ORM
-* Hybrid approach → raw SQL supported via `execute_raw_sql()`
-* Connection pooling enabled
-
-### Redis (Optional)
-
-Use Redis for:
-
-* Caching
-* Session storage
-* Rate limiting
-* Background tasks with Celery
-
----
-
-## 📁 Project Structure
-
-```
-app/
-├── api/          # API endpoints
-├── core/         # Core configuration
-├── db/           # Database setup
-├── models/       # SQLAlchemy models
-├── schemas/      # Pydantic schemas
-├── repositories/ # Data access layer
-└── services/     # Business logic layer
-```
-
----
-
-## 🔄 Request Flow (Architecture Overview)
-
-```mermaid
-graph TD
-    A[Client] -->|HTTP Request| B(API Layer - FastAPI Router);
-
-    subgraph "Application Core"
-        B --> C{Service Layer};
-        C --> D[Repository Layer];
-        D --> E((Database));
-    end
-
-    subgraph "Supporting Modules"
-        F[Schemas - Pydantic]
-        G[Models - SQLAlchemy]
-        H[Core - Config, Security]
-        I[Dependencies - DB Session, Auth]
-    end
-
-    B -- Validates with --> F;
-    B -- Uses --> I;
-    C -- Uses --> H;
-    D -- Interacts with --> G;
-    I -- Provides Session to --> D;
-```
-
-📌 Explanation:
-
-1. Client: Represents the user or another service that sends requests to your API.
-2. API Layer (FastAPI Router): This is the entry point of your application (e.g., main.py, api/v1/endpoints/users.py). This layer receives requests, validates incoming data using Schemas (Pydantic), and injects dependencies like database sessions.
-3. Service Layer: This layer contains the core business logic of the application (e.g., services/user.py). It separates business rules from the API implementation details.
-4. Repository Layer: Responsible for all interactions with the database (e.g., repositories/user.py). It abstracts the data query logic so that the Service Layer doesn't need to know how data is stored or retrieved. This layer uses Models (SQLAlchemy) to map objects to database tables.
-5. Database: Your persistent data storage system (e.g., PostgreSQL).
-6. Supporting Modules: These are the helper components used throughout the application, such as Schemas for data validation, Models for the ORM, Core for configuration and security, and Dependencies for dependency injection.
-
----
-
-## 🚢 Deployment
-
-### Production with Docker
-
-```bash
-docker-compose --env-file .env.prod -f docker-compose.yml up -d --build
-```
-
-### Scaling
-
-* Use **Nginx** as reverse proxy
-* Deploy multiple instances with a load balancer
-* Configure Redis for shared cache/session
-
----
-
-## 📝 Notes
-
-* Minimal yet solid structure — no over-engineering
-* All dependencies are actually used
-* Authentication is a customizable skeleton
-* Supports ORM for CRUD + raw SQL for complex queries
-
----
-
-## 👥 Contributing
-
-Follow **Clean Architecture** guidelines:
-
-1. Business logic → `services/`
-2. Data access → `repositories/`
-3. API contracts → `schemas/`
-4. Keep it simple, avoid over-engineering
-
----
-
-## ⚙️ CI/CD Pipeline (GitHub Actions)
-
-A sample CI workflow is included under `.github/workflows/ci.yml`:
-
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: atabot
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      redis:
-        image: redis:7-alpine
-        ports: ["6379:6379"]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Run tests
-      run: pytest
-```
-
----
-
-🔥 Ready to ship your **FastAPI + PostgreSQL + Redis** backend with production-grade structure.
-
+# Atabot-Lite
+
+## Description
+
+Atabot-Lite is a flexible and powerful chatbot backend built with FastAPI. It leverages Large Language Models (LLMs) via the Poe API and semantic search capabilities using the Voyage AI API to deliver intelligent and context-aware responses. The chatbot's knowledge base is easily configurable through a single `data.json` file, making it adaptable for various business needs.
+
+## Features
+
+  - **FastAPI Backend**: A modern, fast (high-performance) web framework for building APIs with Python.
+  - **LLM Integration**: Connects with the Poe API to generate human-like text responses.
+  - **Semantic Search**: Utilizes Voyage AI to create embeddings and find the most relevant information (e.g., FAQs) based on query similarity.
+  - **Streaming Responses**: Supports real-time, word-by-word responses for a more interactive user experience.
+  - **Session Management**: Maintains conversation history for each user session.
+  - **Configurable Knowledge Base**: All company data, including services, FAQs, and contact information, is managed through a simple `data.json` file.
+  - **Customizable Bot Persona**: Easily define the chatbot's name, personality, and response rules in the configuration.
+  - **RAG (Retrieval-Augmented Generation)**: The chatbot finds relevant information from its knowledge base before generating a response, leading to more accurate and helpful answers.
+
+## How It Works
+
+1.  A user sends a message to one of the API endpoints.
+2.  The `ChatbotService` processes the incoming request.
+3.  The service uses the `EmbeddingService` to convert the user's query into a vector embedding.
+4.  This embedding is compared against pre-calculated embeddings of the FAQs from `data.json` to find the most semantically similar questions and answers.
+5.  The service also searches for keywords related to company information, services, and contact details within the query.
+6.  A detailed prompt is constructed, including the bot's persona, rules, the retrieved information (FAQs, services, etc.), the conversation history, and the user's latest query.
+7.  This comprehensive prompt is sent to the `LLMService`, which forwards it to the Poe API.
+8.  The LLM generates a response based on the provided context.
+9.  The `ChatbotService` sends this response back to the user, either as a complete message or as a real-time stream.
+
+## Technologies Used
+
+  - Python
+  - FastAPI
+  - Pydantic
+  - Poe API (for LLM)
+  - Voyage AI API (for embeddings)
+  - Uvicorn (for serving the application)
+
+## Setup and Installation
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone <repository-url>
+    cd atabot-lite
+    ```
+
+2.  **Install dependencies:**
+    (It is recommended to use a virtual environment)
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3.  **Create a `.env` file:**
+    Create a `.env` file in the root directory and add your API keys and configuration. See the [Configuration](https://www.google.com/search?q=%23configuration) section for details.
+
+4.  **Create the `data.json` file:**
+    Create a `data.json` file in the root directory. This file will serve as the chatbot's knowledge base. See the structure below:
+
+    ```json
+    {
+      "bot_config": {
+        "name": "Atabot",
+        "personality": "helpful and friendly",
+        "language": "Indonesian",
+        "max_response_length": 500,
+        "temperature": 0.7,
+        "rules": [
+          "Be polite.",
+          "Do not answer questions outside the provided context."
+        ]
+      },
+      "company_data": {
+        "company_name": "Your Company Name",
+        "description": "A brief description of your company.",
+        "services": [
+          {
+            "name": "Service A",
+            "description": "Description of Service A.",
+            "features": ["Feature 1", "Feature 2"],
+            "price": "$100"
+          }
+        ],
+        "faq": [
+          {
+            "question": "What is Service A?",
+            "answer": "Service A is a service that does..."
+          }
+        ],
+        "contacts": {
+          "email": "contact@yourcompany.com",
+          "phone": "+123456789"
+        }
+      }
+    }
+    ```
+
+5.  **Run the application:**
+
+    ```bash
+    uvicorn app.main:app --reload
+    ```
+
+    The application will be available at `http://127.0.0.1:8000`.
+
+## Configuration
+
+The following environment variables should be set in your `.env` file:
+
+  - `POE_API_KEY`: Your API key for the Poe service.
+  - `POE_MODEL`: The model to use, e.g., "ChatGPT-3.5-Turbo".
+  - `VOYAGE_API_KEY`: (Optional) Your API key for the Voyage AI service. If not provided, the embedding functionality and semantic search will be disabled, and the chatbot will fall back to keyword matching.
+  - `VOYAGE_MODEL`: The Voyage AI model to use, e.g., "voyage-3.5-lite".
+
+## API Endpoints
+
+The API documentation is available at `/docs` when the application is running.
+
+  - `POST /api/v1/chat/message`
+      - Sends a message to the chatbot and receives a complete response.
+  - `POST /api/v1/chat/message/stream`
+      - Sends a message and receives a streaming response (text/event-stream).
+  - `GET /api/v1/chat/session/create`
+      - Creates a new chat session and returns a `session_id`.
+  - `GET /api/v1/chat/history/{session_id}`
+      - Retrieves the conversation history for a given session.
+  - `DELETE /api/v1/chat/session/{session_id}`
+      - Clears the history for a given session.
+  - `POST /api/v1/chat/reload`
+      - Reloads the data from `data.json` and re-initializes the FAQ embeddings without restarting the server.
+  - `GET /api/v1/health`
+      - A health check endpoint to verify that the service is running.
