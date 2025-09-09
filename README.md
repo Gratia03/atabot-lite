@@ -41,8 +41,8 @@ Atabot-Lite is a flexible and powerful chatbot backend built with FastAPI. It le
 1.  **Clone the repository:**
 
     ```bash
-    git clone <repository-url>
-    cd atabot-lite
+    git clone https://github.com/GratiaManullang03/atabot-lite-v2
+    cd atabot-lite-v2
     ```
 
 2.  **Install dependencies:**
