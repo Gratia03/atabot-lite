@@ -1,0 +1,126 @@
+{
+  "bot_config": {
+    "name": "Atabot",
+    "personality": "ramah, profesional, dan membantu",
+    "language": "Indonesian",
+    "max_response_length": 500,
+    "temperature": 0.7,
+    "rules": [
+      "Selalu gunakan bahasa yang sopan dan profesional",
+      "Jika tidak tahu jawabannya, katakan dengan jujur",
+      "Berikan informasi yang akurat berdasarkan data yang tersedia",
+      "Jangan memberikan informasi di luar konteks perusahaan"
+    ]
+  },
+  "company_data": {
+    "company_name": "Atams",
+    "domain": "atamsindonesia.com",
+    "description": "Atams adalah startup teknologi inovatif Indonesia yang berfokus pada penyediaan solusi digital all-in-one untuk UMKM. Dengan pendekatan yang ramah, mudah diakses, terjangkau, dan mendorong pertumbuhan, Atams menghadirkan teknologi canggih untuk mendukung transformasi bisnis lokal.",
+    "brand_meaning": {
+      "A": ["All-in-one", "Access", "Affordable", "Aspire"],
+      "TAMS": ["Toolkit", "Aplikasi", "Marketing", "Support"]
+    },
+    "services": [
+      {
+        "name": "Chatbot & AI Assistant",
+        "description": "Chatbot pintar yang terintegrasi dengan database perusahaan secara real-time, bisa menjadi asisten 24/7 di website maupun aplikasi.",
+        "features": [
+          "Integrasi database real-time",
+          "Responsive chatting",
+          "Menggunakan RAG & protocol context",
+          "Custom AI workflow"
+        ],
+        "price": "Custom pricing"
+      },
+      {
+        "name": "Landing Page Builder",
+        "description": "Pembuatan landing page profesional untuk branding dan pemasaran UMKM.",
+        "features": [
+          "Desain modern dan responsif",
+          "Integrasi chatbot & AI",
+          "SEO-friendly content",
+          "Cepat dan mudah digunakan"
+        ],
+        "price": "Mulai dari Rp 3.000.000"
+      },
+      {
+        "name": "Business Dashboard",
+        "description": "Dashboard bisnis powerful dengan visualisasi data yang terintegrasi.",
+        "features": ["Overpower analytics dashboard", "Kustomisasi penuh", "Integrasi multi-database"],
+        "price": "Mulai dari Rp 8.000.000"
+      },
+      {
+        "name": "Lead Generation Platform",
+        "description": "Aplikasi otomatis untuk mendapatkan email dan prospek bisnis dari ratusan website sesuai kata kunci dan lokasi.",
+        "features": [
+          "Email scraping valid",
+          "Targeting berbasis lokasi",
+          "Filter industri & kata kunci",
+          "Ekspor data siap digunakan"
+        ],
+        "price": "Custom pricing"
+      },
+      {
+        "name": "Custom App Development",
+        "description": "Pengembangan aplikasi skala UMKM hingga enterprise (login system, portal, e-commerce, dsb).",
+        "features": [
+          "Sistem login & autentikasi aman",
+          "Integrasi CRM/ERP",
+          "Aplikasi berbasis web & mobile"
+        ],
+        "price": "Mulai dari Rp 15.000.000"
+      },
+      {
+        "name": "AI & Machine Learning Solutions",
+        "description": "Penerapan AI, ML, dan Deep Learning untuk otomasi bisnis, prediksi tren, dan inovasi produk.",
+        "features": [
+          "Natural Language Processing",
+          "Computer Vision",
+          "Predictive Analytics",
+          "Custom AI models"
+        ],
+        "price": "Custom pricing"
+      }
+    ],
+    "technology_stack": {
+      "databases": ["PostgreSQL", "MongoDB", "MySQL"],
+      "frameworks_back_end": ["FastAPI", "Gin", "Rust"],
+      "languages": ["JavaScript", "TypeScript"],
+      "front_end": ["Vue", "Next.js", "Nuxt", "React"]
+    },
+    "faq": [
+      {
+        "question": "Apa layanan utama Atams?",
+        "answer": "Atams menyediakan solusi digital seperti chatbot AI, landing page, dashboard bisnis, lead generation, pengembangan aplikasi custom, dan implementasi AI/ML."
+      },
+      {
+        "question": "Apakah Atams cocok untuk UMKM?",
+        "answer": "Ya, seluruh layanan kami dirancang ramah bagi UMKM dengan harga terjangkau dan mudah diakses."
+      },
+      {
+        "question": "Bisakah Atams mengintegrasikan layanan dengan sistem lama?",
+        "answer": "Tentu, kami berpengalaman dalam integrasi multi-database dan sistem lama (legacy systems)."
+      },
+      {
+        "question": "Apakah ada layanan trial?",
+        "answer": "Ya, tersedia demo dan trial terbatas untuk chatbot AI dan dashboard bisnis."
+      },
+      {
+        "question": "Bagaimana soal keamanan data?",
+        "answer": "Kami menggunakan protokol enkripsi canggih dan standar industri untuk melindungi data Anda."
+      }
+    ],
+    "contacts": {
+      "email": "info@atamsindonesia.com",
+      "phone": "+62 21 7654 3210",
+      "whatsapp": "+62 811 2233 4455",
+      "address": "Jl. Inovasi No. 45, Jakarta, Indonesia"
+    },
+    "additional_info": {
+      "working_hours": "Senin - Jumat, 09:00 - 16:00 WIB",
+      "certifications": ["ISO 27001", "ISO 9001"],
+      "tagline": "All-in-One Digital Business Toolkit for UMKM",
+      "clients": "100+ UMKM dan startup di Indonesia"
+    }
+  }
+}

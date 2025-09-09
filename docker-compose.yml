@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  atabot-lite:
+    build: .
+    ports:
+      - '8000:8000'
+    environment:
+      APP_NAME: ${APP_NAME}
+      APP_VERSION: ${APP_VERSION}
+      DEBUG: ${DEBUG}
+      POE_API_KEY: ${POE_API_KEY}
+      POE_MODEL: ${POE_MODEL}
+      VOYAGE_API_KEY: ${VOYAGE_API_KEY}
+      VOYAGE_MODEL: ${VOYAGE_MODEL}
+      MAX_CONTEXT_LENGTH: ${MAX_CONTEXT_LENGTH}
+      SIMILARITY_THRESHOLD: ${SIMILARITY_THRESHOLD}
+    volumes:
+      - ./data.json:/app/data.json

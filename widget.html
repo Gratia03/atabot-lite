@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Atabot Chat Widget</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			#atabot-widget {
+				position: fixed;
+				bottom: 20px;
+				right: 20px;
+				z-index: 9999;
+			}
+
+			#atabot-toggle {
+				width: 60px;
+				height: 60px;
+				border-radius: 50%;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				border: none;
+				cursor: pointer;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: transform 0.3s;
+			}
+
+			#atabot-toggle:hover {
+				transform: scale(1.1);
+			}
+
+			#atabot-toggle svg {
+				width: 30px;
+				height: 30px;
+				fill: white;
+			}
+
+			#atabot-chat {
+				position: absolute;
+				bottom: 80px;
+				right: 0;
+				width: 380px;
+				height: 600px;
+				background: white;
+				border-radius: 12px;
+				box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+				display: none;
+				flex-direction: column;
+				overflow: hidden;
+			}
+
+			#atabot-chat.active {
+				display: flex;
+			}
+
+			.atabot-header {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+				padding: 20px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+
+			.atabot-header h3 {
+				font-size: 18px;
+				font-weight: 600;
+			}
+
+			.atabot-close {
+				background: none;
+				border: none;
+				color: white;
+				cursor: pointer;
+				font-size: 24px;
+			}
+
+			.atabot-messages {
+				flex: 1;
+				overflow-y: auto;
+				padding: 20px;
+				background: #f7f7f7;
+			}
+
+			.atabot-message {
+				margin-bottom: 16px;
+				display: flex;
+				animation: fadeIn 0.3s;
+			}
+
+			@keyframes fadeIn {
+				from {
+					opacity: 0;
+					transform: translateY(10px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			.atabot-message.user {
+				justify-content: flex-end;
+			}
+
+			.atabot-message-content {
+				max-width: 70%;
+				padding: 12px 16px;
+				border-radius: 18px;
+				word-wrap: break-word;
+			}
+
+			.atabot-message.bot .atabot-message-content {
+				background: white;
+				color: #333;
+				border: 1px solid #e0e0e0;
+			}
+
+			.atabot-message.user .atabot-message-content {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+			}
+
+			.atabot-input-container {
+				padding: 20px;
+				background: white;
+				border-top: 1px solid #e0e0e0;
+			}
+
+			.atabot-input-wrapper {
+				display: flex;
+				gap: 10px;
+			}
+
+			#atabot-input {
+				flex: 1;
+				padding: 12px;
+				border: 1px solid #e0e0e0;
+				border-radius: 24px;
+				outline: none;
+				font-size: 14px;
+			}
+
+			#atabot-send {
+				padding: 12px 24px;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+				border: none;
+				border-radius: 24px;
+				cursor: pointer;
+				font-weight: 600;
+				transition: opacity 0.3s;
+			}
+
+			#atabot-send:hover {
+				opacity: 0.9;
+			}
+
+			#atabot-send:disabled {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+
+			.atabot-typing {
+				display: none;
+				padding: 20px;
+				padding-top: 0;
+			}
+
+			.atabot-typing.active {
+				display: block;
+			}
+
+			.typing-indicator {
+				display: flex;
+				gap: 4px;
+			}
+
+			.typing-dot {
+				width: 8px;
+				height: 8px;
+				border-radius: 50%;
+				background: #999;
+				animation: typing 1.4s infinite;
+			}
+
+			.typing-dot:nth-child(2) {
+				animation-delay: 0.2s;
+			}
+
+			.typing-dot:nth-child(3) {
+				animation-delay: 0.4s;
+			}
+
+			@keyframes typing {
+				0%,
+				60%,
+				100% {
+					transform: translateY(0);
+					opacity: 0.5;
+				}
+				30% {
+					transform: translateY(-10px);
+					opacity: 1;
+				}
+			}
+
+			@media (max-width: 480px) {
+				#atabot-chat {
+					width: 100vw;
+					height: 100vh;
+					bottom: 0;
+					right: 0;
+					border-radius: 0;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="atabot-widget">
+			<button id="atabot-toggle">
+				<svg viewBox="0 0 24 24">
+					<path
+						d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"
+					/>
+				</svg>
+			</button>
+
+			<div id="atabot-chat">
+				<div class="atabot-header">
+					<h3>Atabot Assistant</h3>
+					<button class="atabot-close" id="atabot-close">×</button>
+				</div>
+
+				<div class="atabot-messages" id="atabot-messages">
+					<div class="atabot-message bot">
+						<div class="atabot-message-content">
+							Halo! Saya Atabot, asisten virtual Anda. Ada yang bisa saya bantu?
+						</div>
+					</div>
+				</div>
+
+				<div class="atabot-typing" id="atabot-typing">
+					<div class="typing-indicator">
+						<div class="typing-dot"></div>
+						<div class="typing-dot"></div>
+						<div class="typing-dot"></div>
+					</div>
+				</div>
+
+				<div class="atabot-input-container">
+					<div class="atabot-input-wrapper">
+						<input
+							type="text"
+							id="atabot-input"
+							placeholder="Ketik pesan Anda..."
+							autocomplete="off"
+						/>
+						<button id="atabot-send">Kirim</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			(function () {
+				// Configuration
+				const API_URL = 'http://localhost:8000/api/v1'; // Ganti dengan URL API Anda
+				let sessionId =
+					localStorage.getItem('atabot_session_id') || generateSessionId();
+				let isOpen = false;
+				let isTyping = false;
+
+				// Elements
+				const widget = document.getElementById('atabot-widget');
+				const toggle = document.getElementById('atabot-toggle');
+				const chat = document.getElementById('atabot-chat');
+				const closeBtn = document.getElementById('atabot-close');
+				const input = document.getElementById('atabot-input');
+				const sendBtn = document.getElementById('atabot-send');
+				const messages = document.getElementById('atabot-messages');
+				const typingIndicator = document.getElementById('atabot-typing');
+
+				// Generate session ID
+				function generateSessionId() {
+					const id = 'atabot_' + Math.random().toString(36).substr(2, 9);
+					localStorage.setItem('atabot_session_id', id);
+					return id;
+				}
+
+				// Toggle chat
+				function toggleChat() {
+					isOpen = !isOpen;
+					if (isOpen) {
+						chat.classList.add('active');
+						input.focus();
+					} else {
+						chat.classList.remove('active');
+					}
+				}
+
+				// Add message to chat
+				function addMessage(content, isUser = false) {
+					const messageDiv = document.createElement('div');
+					messageDiv.className = `atabot-message ${isUser ? 'user' : 'bot'}`;
+
+					const contentDiv = document.createElement('div');
+					contentDiv.className = 'atabot-message-content';
+					contentDiv.textContent = content;
+
+					messageDiv.appendChild(contentDiv);
+					messages.appendChild(messageDiv);
+					messages.scrollTop = messages.scrollHeight;
+				}
+
+				// Show/hide typing indicator
+				function setTyping(show) {
+					isTyping = show;
+					if (show) {
+						typingIndicator.classList.add('active');
+						messages.scrollTop = messages.scrollHeight;
+					} else {
+						typingIndicator.classList.remove('active');
+					}
+				}
+
+				// Send message
+				async function sendMessage() {
+					const message = input.value.trim();
+					if (!message || isTyping) return;
+
+					// Add user message
+					addMessage(message, true);
+					input.value = '';
+					sendBtn.disabled = true;
+					setTyping(true);
+
+					try {
+						const response = await fetch(`${API_URL}/chat/message`, {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json',
+							},
+							body: JSON.stringify({
+								message: message,
+								session_id: sessionId,
+							}),
+						});
+
+						const data = await response.json();
+
+						if (data.success) {
+							// Update session ID if needed
+							if (data.data.session_id) {
+								sessionId = data.data.session_id;
+								localStorage.setItem('atabot_session_id', sessionId);
+							}
+
+							// Add bot response
+							setTimeout(() => {
+								setTyping(false);
+								addMessage(data.data.response);
+							}, 500);
+						} else {
+							throw new Error(data.message || 'Failed to send message');
+						}
+					} catch (error) {
+						console.error('Error:', error);
+						setTyping(false);
+						addMessage('Maaf, terjadi kesalahan. Silakan coba lagi.');
+					} finally {
+						sendBtn.disabled = false;
+						input.focus();
+					}
+				}
+
+				// Event listeners
+				toggle.addEventListener('click', toggleChat);
+				closeBtn.addEventListener('click', toggleChat);
+				sendBtn.addEventListener('click', sendMessage);
+
+				input.addEventListener('keypress', (e) => {
+					if (e.key === 'Enter' && !e.shiftKey) {
+						e.preventDefault();
+						sendMessage();
+					}
+				});
+
+				// Load chat history on init
+				async function loadHistory() {
+					try {
+						const response = await fetch(
+							`${API_URL}/chat/history/${sessionId}`
+						);
+						const data = await response.json();
+
+						if (data.success && data.data && data.data.length > 0) {
+							// Clear initial message
+							messages.innerHTML = '';
+
+							// Add historical messages
+							data.data.forEach((msg) => {
+								addMessage(msg.content, msg.role === 'user');
+							});
+						}
+					} catch (error) {
+						console.error('Error loading history:', error);
+					}
+				}
+
+				// Initialize
+				loadHistory();
+			})();
+		</script>
+	</body>
+</html>
