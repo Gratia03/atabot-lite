@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, AsyncGenerator
 from datetime import datetime
 import logging
 import numpy as np
@@ -48,6 +48,12 @@ class ChatbotService:
             )
         except Exception as e:
             logger.error(f"Error loading data: {str(e)}")
+    
+    def create_session(self, session_id: str) -> str:
+        """Create a new session"""
+        if session_id not in self.sessions:
+            self.sessions[session_id] = []
+        return session_id
             
     async def initialize_embeddings(self):
         """Initialize FAQ embeddings for similarity search"""
@@ -59,8 +65,10 @@ class ChatbotService:
         
     async def process_message(self, request: ChatRequest) -> ChatResponse:
         """Process incoming chat message"""
-        # Generate or retrieve session ID
-        session_id = request.session_id or str(uuid.uuid4())
+        # Use provided session_id or generate new one
+        session_id = request.session_id
+        if not session_id:
+            session_id = str(uuid.uuid4())
         
         # Get or create session context
         if session_id not in self.sessions:
@@ -93,6 +101,52 @@ class ChatbotService:
             session_id=session_id,
             timestamp=datetime.now()
         )
+    
+    async def process_message_stream(self, request: ChatRequest) -> AsyncGenerator[Dict[str, Any], None]:
+        """Process incoming chat message with streaming response"""
+        # Use provided session_id or generate new one
+        session_id = request.session_id
+        if not session_id:
+            session_id = str(uuid.uuid4())
+        
+        # Get or create session context
+        if session_id not in self.sessions:
+            self.sessions[session_id] = []
+        
+        # Yield session_id first
+        yield {"type": "session", "session_id": session_id}
+        
+        # Add user message to context
+        user_message = ChatMessage(role="user", content=request.message)
+        self.sessions[session_id].append(user_message)
+        
+        # Find relevant information
+        relevant_info = await self._find_relevant_info(request.message)
+        
+        # Build prompt
+        prompt = self._build_prompt(request.message, relevant_info)
+        
+        # Generate response with streaming
+        full_response = ""
+        async for chunk in self.llm_service.generate_response_stream(
+            prompt=prompt,
+            context=self.sessions[session_id][:-1],  # Exclude the current message
+            temperature=self.bot_config.temperature,
+            max_tokens=self.bot_config.max_response_length
+        ):
+            full_response += chunk
+            yield {"type": "content", "content": chunk, "session_id": session_id}
+        
+        # Add assistant response to context
+        assistant_message = ChatMessage(role="assistant", content=full_response)
+        self.sessions[session_id].append(assistant_message)
+        
+        # Maintain context size
+        if len(self.sessions[session_id]) > settings.MAX_CONTEXT_LENGTH * 2:
+            self.sessions[session_id] = self.sessions[session_id][-settings.MAX_CONTEXT_LENGTH * 2:]
+        
+        # Yield completion signal
+        yield {"type": "done", "done": True, "session_id": session_id}
     
     async def _find_relevant_info(self, query: str) -> Dict[str, Any]:
         """Find relevant information from company data"""

@@ -1,6 +1,7 @@
 import httpx
-from typing import List, Dict
+from typing import List, Dict, AsyncGenerator
 import logging
+import json
 
 from app.core.config import settings
 from app.models.chat import ChatMessage
@@ -50,6 +51,58 @@ class LLMService:
         except Exception as e:
             logger.error(f"Error calling LLM API: {str(e)}")
             return "Maaf, terjadi kesalahan sistem. Silakan coba lagi."
+    
+    async def generate_response_stream(
+        self,
+        prompt: str,
+        context: List[ChatMessage] = [],
+        temperature: float = 0.7,
+        max_tokens: int = 500
+    ) -> AsyncGenerator[str, None]:
+        """Generate streaming response using POE API"""
+        try:
+            messages = self._prepare_messages(prompt, context)
+            
+            async with httpx.AsyncClient() as client:
+                # Request with stream=true for streaming response
+                async with client.stream(
+                    "POST",
+                    f"{self.base_url}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.poe_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": self.model,
+                        "messages": messages,
+                        "temperature": temperature,
+                        "max_tokens": max_tokens,
+                        "stream": True  # Enable streaming
+                    },
+                    timeout=30.0
+                ) as response:
+                    if response.status_code == 200:
+                        async for line in response.aiter_lines():
+                            if line.startswith("data: "):
+                                data_str = line[6:]  # Remove "data: " prefix
+                                if data_str == "[DONE]":
+                                    break
+                                try:
+                                    data = json.loads(data_str)
+                                    if "choices" in data and len(data["choices"]) > 0:
+                                        delta = data["choices"][0].get("delta", {})
+                                        content = delta.get("content", "")
+                                        if content:
+                                            yield content
+                                except json.JSONDecodeError:
+                                    continue
+                    else:
+                        logger.error(f"LLM API stream error: {response.status_code}")
+                        yield "Maaf, terjadi kesalahan dalam memproses permintaan Anda."
+                        
+        except Exception as e:
+            logger.error(f"Error calling LLM API stream: {str(e)}")
+            yield "Maaf, terjadi kesalahan sistem. Silakan coba lagi."
     
     def _prepare_messages(self, prompt: str, context: List[ChatMessage]) -> List[Dict]:
         """Prepare messages for API call"""
