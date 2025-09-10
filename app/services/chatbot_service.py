@@ -6,16 +6,16 @@ import logging
 import numpy as np
 
 from app.models.chat import ChatMessage, ChatRequest, ChatResponse, BotConfig, CompanyData
-from app.services.llm_service import LLMService
-from app.services.embedding_service import EmbeddingService
+from app.services.enhanced_llm_service import EnhancedLLMService
+from app.services.enhanced_embedding_service import EnhancedEmbeddingService
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 class ChatbotService:
     def __init__(self):
-        self.llm_service = LLMService()
-        self.embedding_service = EmbeddingService()
+        self.llm_service = EnhancedLLMService()
+        self.embedding_service = EnhancedEmbeddingService()
         self.bot_config: Optional[BotConfig] = None
         self.company_data: Optional[CompanyData] = None
         self.sessions: Dict[str, List[ChatMessage]] = {}

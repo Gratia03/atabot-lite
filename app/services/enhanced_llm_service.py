@@ -1,5 +1,5 @@
 import time
-from typing import List, Optional
+from typing import List
 from app.services.llm_service import LLMService
 from app.models.chat import ChatMessage
 from app.services.cache_service import cache_service

@@ -8,19 +8,32 @@ import os
 from app.core.config import settings
 from app.api.v1.api import api_router
 from app.api.v1.endpoints.chat import initialize_chatbot_embeddings
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Code to run on startup
-    await initialize_chatbot_embeddings()
-    yield
-    # Code to run on shutdown (if any)
+from app.middleware.security import security_middleware
+from app.middleware.rate_limiting import rate_limit_middleware
+from app.middleware.performance_middleware import performance_middleware
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     openapi_url=f"/openapi.json" if settings.DEBUG else None
 )
+
+# Middlewares
+app.middleware("http")(security_middleware)
+app.middleware("http")(rate_limit_middleware) 
+app.middleware("http")(performance_middleware)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Code to run on startup
+    await initialize_chatbot_embeddings()
+    
+    # BARU: Create backup directory if not exists
+    backup_dir = "backups"
+    if not os.path.exists(backup_dir):
+        os.makedirs(backup_dir)
+        
+    yield
 
 # CORS middleware untuk widget
 app.add_middleware(
