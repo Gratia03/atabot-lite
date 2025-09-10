@@ -1,12 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from app.schemas.common import DataResponse
 from app.services.analytics_service import analytics_service
-from app.api.v1.endpoints.admin import verify_admin
 
 router = APIRouter()
 
 @router.get("/stats", response_model=DataResponse[dict])
-async def get_analytics_stats(admin = Depends(verify_admin)):
+async def get_analytics_stats():
     """Get analytics statistics"""
     stats = analytics_service.get_stats()
     return DataResponse(
